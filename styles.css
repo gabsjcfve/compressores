@@ -1,8 +1,7 @@
 :root {
-    --primary-color: #d32f2f;
-    --secondary-color: #ff6659;
-    --dark-color: #2c3e50;
-    --light-color: #ecf0f1;
+    --primary-color: #2c3e50;
+    --secondary-color: #3498db;
+    --background-color: #f8f9fa;
 }
 
 * {
@@ -13,174 +12,146 @@
 
 body {
     font-family: 'Segoe UI', system-ui, sans-serif;
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    background-color: var(--background-color);
     min-height: 100vh;
     display: flex;
-    flex-direction: column;
+    justify-content: center;
     align-items: center;
-    padding: 2rem;
-}
-
-.logo-header {
-    text-align: center;
-    margin-bottom: 2rem;
-    max-width: 800px;
-    width: 100%;
-}
-
-.steck-logo {
-    max-width: 300px;
-    height: auto;
-    margin: 0 auto;
-    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+    padding: 20px;
 }
 
 .container {
     background: white;
-    border-radius: 15px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     width: 100%;
     max-width: 800px;
-    padding: 2.5rem;
-    margin: 2rem;
+    padding: 30px;
 }
 
 h1 {
     color: var(--primary-color);
     text-align: center;
-    margin-bottom: 2rem;
-    font-size: 2.2em;
-    border-bottom: 3px solid var(--primary-color);
-    padding-bottom: 1rem;
+    margin-bottom: 25px;
+    font-size: 2em;
 }
 
 .datetime {
     text-align: center;
-    color: var(--dark-color);
-    margin-bottom: 1.5rem;
-    font-size: 1.1em;
+    color: #666;
+    margin-bottom: 20px;
+    font-size: 0.9em;
 }
 
-.report-section {
+.form-section {
+    margin-bottom: 25px;
+}
+
+.input-row {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 1.5rem;
-    margin-bottom: 2rem;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 15px;
 }
 
 .input-group {
-    margin-bottom: 1.5rem;
-    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
 }
 
 .input-group label {
-    display: block;
-    margin-bottom: 0.5rem;
-    color: var(--dark-color);
+    color: var(--primary-color);
     font-weight: 600;
-    font-size: 0.95em;
+    font-size: 0.9em;
 }
 
 .input-group input,
 .input-group select {
-    width: 100%;
-    padding: 0.8rem;
+    padding: 10px;
     border: 2px solid #ddd;
-    border-radius: 8px;
+    border-radius: 6px;
     font-size: 1em;
     transition: all 0.3s ease;
 }
 
 .input-group input:focus,
 .input-group select:focus {
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(211, 47, 47, 0.1);
+    border-color: var(--secondary-color);
     outline: none;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
 }
 
-.photo-container {
-    border: 3px dashed var(--primary-color);
-    border-radius: 10px;
-    padding: 1rem;
-    margin: 1.5rem 0;
+.photo-section {
+    margin: 25px 0;
     text-align: center;
-    background: rgba(255, 102, 89, 0.05);
 }
 
-#photoDisplay {
-    max-width: 100%;
-    height: auto;
+.photo-upload {
+    border: 2px dashed var(--secondary-color);
     border-radius: 8px;
-    display: none;
-    margin-top: 1rem;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-}
-
-.controls {
-    display: flex;
-    gap: 1rem;
-    flex-wrap: wrap;
-    justify-content: center;
-    margin-top: 2rem;
-}
-
-.file-upload {
-    position: relative;
-    overflow: hidden;
+    padding: 25px;
     cursor: pointer;
-    background: var(--primary-color);
-    color: white;
-    padding: 0.8rem 1.5rem;
-    border-radius: 8px;
     transition: all 0.3s ease;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
+    background-color: rgba(52, 152, 219, 0.05);
 }
 
-.file-upload:hover {
-    background: var(--secondary-color);
+.photo-upload:hover {
+    background-color: rgba(52, 152, 219, 0.1);
     transform: translateY(-2px);
 }
 
-.file-upload input {
-    position: absolute;
-    left: 0;
-    top: 0;
-    opacity: 0;
-    cursor: pointer;
+.photo-upload i {
+    font-size: 2em;
+    color: var(--secondary-color);
+    margin-bottom: 10px;
 }
 
-.btn-generate {
-    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+.photo-upload span {
+    color: var(--primary-color);
+    font-weight: 500;
+}
+
+#photoPreview {
+    max-width: 100%;
+    height: auto;
+    margin-top: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.hidden {
+    display: none;
+}
+
+.generate-btn {
+    width: 100%;
+    padding: 15px;
+    background-color: var(--secondary-color);
     color: white;
     border: none;
-    padding: 0.8rem 2rem;
     border-radius: 8px;
     font-size: 1.1em;
     cursor: pointer;
     transition: all 0.3s ease;
-    display: inline-flex;
+    display: flex;
     align-items: center;
-    gap: 0.5rem;
+    justify-content: center;
+    gap: 10px;
 }
 
-.btn-generate:hover {
+.generate-btn:hover {
+    background-color: #2980b9;
     transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(211, 47, 47, 0.3);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
 @media (max-width: 768px) {
     .container {
-        padding: 1.5rem;
-        margin: 1rem;
+        padding: 20px;
     }
     
     h1 {
-        font-size: 1.8em;
-    }
-    
-    .steck-logo {
-        max-width: 200px;
+        font-size: 1.6em;
     }
 }
