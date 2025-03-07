@@ -1,4 +1,3 @@
-// Configurações iniciais
 let currentData = {
     photo: null,
     equipmentData: JSON.parse(localStorage.getItem('equipmentData')) || {}
@@ -24,21 +23,14 @@ document.getElementById('photoInput').addEventListener('change', function(e) {
         reader.onload = (event) => {
             const img = document.getElementById('photoPreview');
             img.src = event.target.result;
-            img.classList.remove('hidden');
+            img.style.display = 'block';
             currentData.photo = event.target.result;
         };
         reader.readAsDataURL(file);
     }
 });
 
-// Salvar dados automaticamente
-document.querySelectorAll('input, select').forEach(element => {
-    element.addEventListener('input', () => {
-        saveData();
-        element.reportValidity();
-    });
-});
-
+// Salvar dados
 function saveData() {
     const equipment = document.getElementById('equipment-select').value;
     currentData.equipmentData[equipment] = {
@@ -48,11 +40,10 @@ function saveData() {
         operation: document.getElementById('operation-select').value,
         datetime: document.getElementById('datetime').textContent
     };
-    
     localStorage.setItem('equipmentData', JSON.stringify(currentData.equipmentData));
 }
 
-// Carregar dados salvos
+// Carregar dados
 function loadData() {
     const equipment = document.getElementById('equipment-select').value;
     const data = currentData.equipmentData[equipment] || {};
@@ -65,29 +56,28 @@ function loadData() {
 
 // Gerar PDF
 async function generatePDF() {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF({
-        orientation: 'portrait',
-        unit: 'mm',
-        format: 'a4'
-    });
+    try {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({
+            orientation: 'portrait',
+            unit: 'mm',
+            format: 'a4'
+        });
 
-    // Configurações do documento
-    doc.setFont('helvetica');
-    doc.setFontSize(12);
-    
-    // Cabeçalho
-    doc.setFontSize(16);
-    doc.text("Relatório Técnico", 105, 20, { align: 'center' });
-    doc.setFontSize(10);
-    doc.text(`Gerado em: ${new Date().toLocaleString()}`, 105, 25, { align: 'center' });
+        // Cabeçalho
+        doc.setFontSize(16);
+        doc.text("Relatório Técnico", 105, 20, { align: 'center' });
+        doc.setFontSize(10);
+        doc.text(`Gerado em: ${new Date().toLocaleString()}`, 105, 25, { align: 'center' });
 
-    // Dados do equipamento
-    let yPos = 40;
-    Object.entries(currentData.equipmentData).forEach(([equipment, data]) => {
+        // Dados do equipamento
+        let yPos = 40;
+        const equipment = document.getElementById('equipment-select').value;
+        const data = currentData.equipmentData[equipment] || {};
+
         doc.setFontSize(12);
         doc.setFont(undefined, 'bold');
-        doc.text(`Equipamento: ${equipment}`, 20, yPos);
+        doc.text(`Equipamento: ${document.getElementById('equipment-select').selectedOptions[0].text}`, 20, yPos);
         doc.setFont(undefined, 'normal');
         
         doc.text(`Responsável: ${data.responsible}`, 20, yPos + 7);
@@ -95,38 +85,47 @@ async function generatePDF() {
         doc.text(`Temperatura: ${data.temperature} °C`, 20, yPos + 21);
         doc.text(`Estado: ${data.operation}`, 20, yPos + 28);
         doc.text(`Data: ${data.datetime}`, 20, yPos + 35);
-        
         yPos += 45;
-        
-        if(yPos > 250) {
+
+        // Adicionar foto
+        if(currentData.photo) {
+            const img = document.getElementById('photoPreview');
+            const canvas = await html2canvas(img, {
+                scale: 2,
+                useCORS: true,
+                logging: false
+            });
+            
+            const imgWidth = 150;
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
             doc.addPage();
-            yPos = 20;
+            doc.addImage(canvas, 'JPEG', 30, 20, imgWidth, imgHeight);
         }
-    });
 
-    // Adicionar foto
-    if(currentData.photo) {
-        const img = new Image();
-        img.src = currentData.photo;
-        
-        await new Promise((resolve) => {
-            img.onload = resolve;
-        });
-
-        const imgWidth = 150;
-        const imgHeight = (img.height * imgWidth) / img.width;
-        doc.addPage();
-        doc.addImage(img, 'JPEG', 30, 20, imgWidth, imgHeight);
+        // Salvar PDF
+        doc.save(`relatorio_${Date.now()}.pdf`);
+    } catch (error) {
+        console.error('Erro ao gerar PDF:', error);
+        alert('Erro ao gerar o PDF! Verifique o console para detalhes.');
     }
-
-    // Salvar PDF
-    doc.save(`relatorio_${Date.now()}.pdf`);
 }
 
 // Inicialização
 document.addEventListener('DOMContentLoaded', () => {
     updateDateTime();
     setInterval(updateDateTime, 1000);
-    document.getElementById('equipment-select').addEventListener('change', loadData);
+    
+    document.getElementById('equipment-select').addEventListener('change', () => {
+        loadData();
+        saveData();
+    });
+    
+    document.querySelectorAll('input, select').forEach(element => {
+        element.addEventListener('input', () => {
+            saveData();
+            element.reportValidity();
+        });
+    });
+
     loadData();
 });
