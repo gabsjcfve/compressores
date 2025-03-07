@@ -1,39 +1,47 @@
-// Armazenamento de dados
-let equipmentData = JSON.parse(localStorage.getItem('equipmentData')) || {};
+// Configurações iniciais
+let currentData = {
+    photo: null,
+    equipmentData: JSON.parse(localStorage.getItem('equipmentData')) || {}
+};
 
-// Atualização automática de data/hora
+// Atualizar data/hora
 function updateDateTime() {
-    const options = { 
-        weekday: 'long', 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric',
+    const now = new Date();
+    document.getElementById('datetime').textContent = now.toLocaleString('pt-BR', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric',
         hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit'
-    };
-    document.getElementById('datetime').textContent = 
-        new Date().toLocaleDateString('pt-BR', options);
+        minute: '2-digit'
+    });
 }
 
-// Gerenciamento de fotos
+// Gerenciar upload de foto
 document.getElementById('photoInput').addEventListener('change', function(e) {
     const file = e.target.files[0];
     if (file && file.type.startsWith('image/')) {
         const reader = new FileReader();
         reader.onload = (event) => {
-            const img = document.getElementById('photoDisplay');
+            const img = document.getElementById('photoPreview');
             img.src = event.target.result;
-            img.style.display = 'block';
+            img.classList.remove('hidden');
+            currentData.photo = event.target.result;
         };
         reader.readAsDataURL(file);
     }
 });
 
-// Salvar dados do equipamento
-function saveEquipmentData() {
+// Salvar dados automaticamente
+document.querySelectorAll('input, select').forEach(element => {
+    element.addEventListener('input', () => {
+        saveData();
+        element.reportValidity();
+    });
+});
+
+function saveData() {
     const equipment = document.getElementById('equipment-select').value;
-    const data = {
+    currentData.equipmentData[equipment] = {
         responsible: document.getElementById('responsible').value,
         pressure: document.getElementById('pressure').value,
         temperature: document.getElementById('temperature').value,
@@ -41,14 +49,13 @@ function saveEquipmentData() {
         datetime: document.getElementById('datetime').textContent
     };
     
-    equipmentData[equipment] = data;
-    localStorage.setItem('equipmentData', JSON.stringify(equipmentData));
+    localStorage.setItem('equipmentData', JSON.stringify(currentData.equipmentData));
 }
 
-// Carregar dados do equipamento
-function loadEquipmentData() {
+// Carregar dados salvos
+function loadData() {
     const equipment = document.getElementById('equipment-select').value;
-    const data = equipmentData[equipment] || {};
+    const data = currentData.equipmentData[equipment] || {};
     
     document.getElementById('responsible').value = data.responsible || '';
     document.getElementById('pressure').value = data.pressure || '';
@@ -56,35 +63,28 @@ function loadEquipmentData() {
     document.getElementById('operation-select').value = data.operation || 'parado';
 }
 
-// Gerar PDF profissional
+// Gerar PDF
 async function generatePDF() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({
-        orientation: 'p',
+        orientation: 'portrait',
         unit: 'mm',
         format: 'a4'
     });
 
-    // Adicionar logo
-    const logoImg = new Image();
-    logoImg.src = 'https://bucket-site-steck.s3.sa-east-1.amazonaws.com/images/shared.jpg';
-    
-    await new Promise((resolve) => {
-        logoImg.onload = resolve;
-        logoImg.onerror = resolve; // Prevenir travamento se a imagem não carregar
-    });
-
-    doc.addImage(logoImg, 'JPEG', 15, 10, 40, 15);
-
     // Configurações do documento
     doc.setFont('helvetica');
     doc.setFontSize(12);
-    doc.setTextColor(40, 40, 40);
     
-    let yPos = 40;
+    // Cabeçalho
+    doc.setFontSize(16);
+    doc.text("Relatório Técnico", 105, 20, { align: 'center' });
+    doc.setFontSize(10);
+    doc.text(`Gerado em: ${new Date().toLocaleString()}`, 105, 25, { align: 'center' });
 
-    // Adicionar dados de todos os equipamentos
-    Object.entries(equipmentData).forEach(([equipment, data]) => {
+    // Dados do equipamento
+    let yPos = 40;
+    Object.entries(currentData.equipmentData).forEach(([equipment, data]) => {
         doc.setFontSize(12);
         doc.setFont(undefined, 'bold');
         doc.text(`Equipamento: ${equipment}`, 20, yPos);
@@ -105,44 +105,28 @@ async function generatePDF() {
     });
 
     // Adicionar foto
-    const imgElement = document.getElementById('photoDisplay');
-    if (imgElement.src) {
-        const canvas = await html2canvas(imgElement, {
-            scale: 3,
-            useCORS: true,
-            logging: false
-        });
+    if(currentData.photo) {
+        const img = new Image();
+        img.src = currentData.photo;
         
+        await new Promise((resolve) => {
+            img.onload = resolve;
+        });
+
         const imgWidth = 150;
-        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        const imgHeight = (img.height * imgWidth) / img.width;
         doc.addPage();
-        doc.addImage(canvas, 'JPEG', 30, 20, imgWidth, imgHeight);
+        doc.addImage(img, 'JPEG', 30, 20, imgWidth, imgHeight);
     }
 
-    // Rodapé
-    const totalPages = doc.internal.getNumberOfPages();
-    for(let i = 1; i <= totalPages; i++) {
-        doc.setPage(i);
-        doc.setFillColor(211, 47, 47);
-        doc.rect(0, 280, 210, 20, 'F');
-        doc.setTextColor(255, 255, 255);
-        doc.setFontSize(10);
-        doc.text(`Página ${i} de ${totalPages} - Gerado em ${new Date().toLocaleString()}`, 
-                105, 287, { align: 'center' });
-    }
-
-    doc.save(`Relatorio_Steck_${Date.now()}.pdf`);
+    // Salvar PDF
+    doc.save(`relatorio_${Date.now()}.pdf`);
 }
 
-// Event Listeners
+// Inicialização
 document.addEventListener('DOMContentLoaded', () => {
     updateDateTime();
     setInterval(updateDateTime, 1000);
-    loadEquipmentData();
-});
-
-document.querySelectorAll('input, select').forEach(element => {
-    element.addEventListener('input', () => {
-        element.reportValidity();
-    });
+    document.getElementById('equipment-select').addEventListener('change', loadData);
+    loadData();
 });
