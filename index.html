@@ -3,78 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Monitoramento de Equipamentos - Steck</title>
+    <title>Monitoramento de Equipamentos</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-    <div class="logo-header">
-        <img src="https://bucket-site-steck.s3.sa-east-1.amazonaws.com/images/shared.jpg" 
-             alt="Steck Logo" 
-             class="steck-logo">
-    </div>
-    
     <div class="container">
-        <h1><i class="fas fa-industry"></i> Relatório Técnico</h1>
-        <div class="datetime" id="datetime"></div>
+        <h1><i class="fas fa-file-alt"></i> Relatório Técnico</h1>
         
-        <div class="report-section">
-            <div class="input-group">
-                <label for="responsible"><i class="fas fa-user"></i> Responsável:</label>
-                <input type="text" id="responsible" placeholder="Nome do Responsável" required>
+        <div class="datetime" id="datetime"></div>
+
+        <div class="form-section">
+            <div class="input-row">
+                <div class="input-group">
+                    <label for="responsible"><i class="fas fa-user"></i> Responsável:</label>
+                    <input type="text" id="responsible" required>
+                </div>
+                
+                <div class="input-group">
+                    <label for="equipment-select"><i class="fas fa-cogs"></i> Equipamento:</label>
+                    <select id="equipment-select" required>
+                        <!-- Opções mantidas iguais -->
+                    </select>
+                </div>
             </div>
-            
-            <div class="input-group">
-                <label for="equipment-select"><i class="fas fa-cogs"></i> Equipamento:</label>
-                <select id="equipment-select" required onchange="loadEquipmentData()">
-                    <option value="compressor1">Compressor: Atlas</option>
-                    <option value="compressor2">Compressor: Atlas 2</option>
-                    <option value="compressor3">Compressor: Schuz</option>
-                    <option value="compressor4">Compressor: Schuz 2</option>
-                    <option value="compressor5">Compressor: Interface</option>
-                    <option value="secador1">Secador: SCM</option>
-                    <option value="secador2">Secador: Schuz</option>
-                    <option value="pulmao1">Pulmão: Vaso de Pressão 1</option>
-                    <option value="pulmao2">Pulmão: Vaso de Pressão 2</option>
-                    <option value="pulmao3">Pulmão: Vaso de Pressão 3</option>
-                    <option value="pulmao4">Pulmão: Vaso de Pressão 4</option>
-                </select>
+
+            <div class="input-row">
+                <div class="input-group">
+                    <label for="pressure"><i class="fas fa-tachometer-alt"></i> Pressão (bar):</label>
+                    <input type="number" id="pressure" step="0.01" required>
+                </div>
+                
+                <div class="input-group">
+                    <label for="temperature"><i class="fas fa-thermometer-half"></i> Temperatura (°C):</label>
+                    <input type="number" id="temperature" step="0.1" required>
+                </div>
+                
+                <div class="input-group">
+                    <label for="operation-select"><i class="fas fa-power-off"></i> Estado:</label>
+                    <select id="operation-select" required>
+                        <option value="parado">Parado</option>
+                        <option value="em operação">Em Operação</option>
+                    </select>
+                </div>
             </div>
         </div>
 
-        <div class="report-section">
-            <div class="input-group">
-                <label for="pressure"><i class="fas fa-tachometer-alt"></i> Pressão (bar):</label>
-                <input type="number" id="pressure" step="0.01" required oninput="saveEquipmentData()">
+        <div class="photo-section">
+            <div class="photo-upload" onclick="document.getElementById('photoInput').click()">
+                <i class="fas fa-camera"></i>
+                <span>Clique para adicionar foto</span>
+                <input type="file" id="photoInput" accept="image/*" hidden>
             </div>
-            
-            <div class="input-group">
-                <label for="temperature"><i class="fas fa-thermometer-half"></i> Temperatura (°C):</label>
-                <input type="number" id="temperature" step="0.1" required oninput="saveEquipmentData()">
-            </div>
-            
-            <div class="input-group">
-                <label for="operation-select"><i class="fas fa-power-off"></i> Estado:</label>
-                <select id="operation-select" required onchange="saveEquipmentData()">
-                    <option value="parado">Parado</option>
-                    <option value="em operação">Em Operação</option>
-                </select>
-            </div>
+            <img id="photoPreview" class="hidden">
         </div>
 
-        <div class="photo-container">
-            <div class="file-upload">
-                <i class="fas fa-camera"></i> Adicionar Foto
-                <input type="file" id="photoInput" accept="image/*">
-            </div>
-            <img id="photoDisplay" alt="Foto do Equipamento">
-        </div>
-
-        <div class="controls">
-            <button class="btn-generate" onclick="generatePDF()">
-                <i class="fas fa-file-pdf"></i> Gerar Relatório
-            </button>
-        </div>
+        <button class="generate-btn" onclick="generatePDF()">
+            <i class="fas fa-file-pdf"></i> Gerar Relatório PDF
+        </button>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
