@@ -24,7 +24,7 @@ body {
 .container {
     background: white;
     border-radius: 12px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     width: 100%;
     max-width: 800px;
     padding: 30px;
@@ -49,13 +49,15 @@ h1 {
 }
 
 .input-row {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    display: flex;
+    flex-wrap: wrap;
     gap: 15px;
     margin-bottom: 15px;
 }
 
 .input-group {
+    flex: 1;
+    min-width: 200px;
     display: flex;
     flex-direction: column;
     gap: 5px;
@@ -118,7 +120,7 @@ h1 {
     height: auto;
     margin-top: 15px;
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     display: none;
 }
 
@@ -145,7 +147,7 @@ h1 {
 .generate-btn:hover {
     background-color: #2980b9;
     transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 @media (max-width: 768px) {
