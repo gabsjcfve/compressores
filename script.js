@@ -24,7 +24,10 @@ document.getElementById('photoInput').addEventListener('change', function(e) {
             img.src = event.target.result;
             img.style.display = 'block';
             const equipment = document.getElementById('equipment-select').value;
-            currentData.equipmentData[equipment].photo = event.target.result;
+            currentData.equipmentData[equipment] = {
+                ...currentData.equipmentData[equipment],
+                photo: event.target.result
+            };
             localStorage.setItem('equipmentData', JSON.stringify(currentData.equipmentData));
         };
         reader.readAsDataURL(file);
@@ -35,12 +38,12 @@ document.getElementById('photoInput').addEventListener('change', function(e) {
 function saveData() {
     const equipment = document.getElementById('equipment-select').value;
     currentData.equipmentData[equipment] = {
-        ...currentData.equipmentData[equipment],
         responsible: document.getElementById('responsible').value,
         pressure: document.getElementById('pressure').value,
         temperature: document.getElementById('temperature').value,
         operation: document.getElementById('operation-select').value,
-        datetime: document.getElementById('datetime').textContent
+        datetime: document.getElementById('datetime').textContent,
+        photo: currentData.equipmentData[equipment]?.photo || null
     };
     localStorage.setItem('equipmentData', JSON.stringify(currentData.equipmentData));
 }
