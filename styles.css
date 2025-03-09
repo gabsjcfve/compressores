@@ -1,158 +1,197 @@
-:root {
-    --primary-color: #2c3e50;
-    --secondary-color: #3498db;
-    --background-color: #f8f9fa;
+let currentData = {
+    photo: null,
+    equipmentData: JSON.parse(localStorage.getItem('equipmentData')) || {}
+};
+
+// Atualizar data/hora
+function updateDateTime() {
+    const now = new Date();
+    document.getElementById('datetime').textContent = now.toLocaleString('pt-BR', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
 }
 
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
-
-body {
-    font-family: 'Segoe UI', system-ui, sans-serif;
-    background-color: var(--background-color);
-    min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 20px;
-}
-
-.container {
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    width: 100%;
-    max-width: 800px;
-    padding: 30px;
-}
-
-h1 {
-    color: var(--primary-color);
-    text-align: center;
-    margin-bottom: 25px;
-    font-size: 2em;
-}
-
-.datetime {
-    text-align: center;
-    color: #666;
-    margin-bottom: 20px;
-    font-size: 0.9em;
-}
-
-.form-section {
-    margin-bottom: 25px;
-}
-
-.input-row {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 15px;
-    margin-bottom: 15px;
-}
-
-.input-group {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-}
-
-.input-group label {
-    color: var(--primary-color);
-    font-weight: 600;
-    font-size: 0.9em;
-}
-
-.input-group input,
-.input-group select {
-    padding: 10px;
-    border: 2px solid #ddd;
-    border-radius: 6px;
-    font-size: 1em;
-    transition: all 0.3s ease;
-}
-
-.input-group input:focus,
-.input-group select:focus {
-    border-color: var(--secondary-color);
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
-}
-
-.photo-section {
-    margin: 25px 0;
-    text-align: center;
-}
-
-.photo-upload {
-    border: 2px dashed var(--secondary-color);
-    border-radius: 8px;
-    padding: 25px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    background-color: rgba(52, 152, 219, 0.05);
-}
-
-.photo-upload:hover {
-    background-color: rgba(52, 152, 219, 0.1);
-    transform: translateY(-2px);
-}
-
-.photo-upload i {
-    font-size: 2em;
-    color: var(--secondary-color);
-    margin-bottom: 10px;
-}
-
-.photo-upload span {
-    color: var(--primary-color);
-    font-weight: 500;
-}
-
-#photoPreview {
-    max-width: 100%;
-    height: auto;
-    margin-top: 15px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    display: none;
-}
-
-.hidden {
-    display: none;
-}
-
-.generate-btn {
-    width: 100%;
-    padding: 15px;
-    background-color: var(--secondary-color);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-size: 1.1em;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-}
-
-.generate-btn:hover {
-    background-color: #2980b9;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-}
-
-@media (max-width: 768px) {
-    .container {
-        padding: 20px;
+// Gerenciar upload de foto
+document.getElementById('photoInput').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file && file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const img = document.getElementById('photoPreview');
+            img.src = event.target.result;
+            img.style.display = 'block';
+            currentData.photo = event.target.result;
+        };
+        reader.readAsDataURL(file);
     }
-    
-    h1 {
-        font-size: 1.6em;
+});
+
+// Salvar dados
+function saveData() {
+    const equipment = document.getElementById('equipment-select').value;
+    currentData.equipmentData[equipment] = {
+        responsible: document.getElementById('responsible').value,
+        pressure: document.getElementById('pressure').value,
+        temperature: document.getElementById('temperature').value,
+        operation: document.getElementById('operation-select').value,
+        datetime: document.getElementById('datetime').textContent
+    };
+    localStorage.setItem('equipmentData', JSON.stringify(currentData.equipmentData));
+}
+
+// Carregar dados
+function loadData() {
+    const equipment = document.getElementById('equipment-select').value;
+    const data = currentData.equipmentData[equipment] || {};
+
+    document.getElementById('responsible').value = data.responsible || '';
+    document.getElementById('pressure').value = data.pressure || '';
+    document.getElementById('temperature').value = data.temperature || '';
+    document.getElementById('operation-select').value = data.operation || 'parado';
+}
+
+// Gerar PDF
+async function generatePDF() {
+    try {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({
+            orientation: 'portrait',
+            unit: 'mm',
+            format: 'a4'
+        });
+
+        // Cabeçalho
+        doc.setFontSize(16);
+        doc.text("Relatório Técnico", 105, 20, { align: 'center' });
+        doc.setFontSize(10);
+        doc.text(`Gerado em: ${new Date().toLocaleString()}`, 105, 25, { align: 'center' });
+
+        // Dados do equipamento
+        let yPos = 40;
+        const equipment = document.getElementById('equipment-select').value;
+        const data = currentData.equipmentData[equipment] || {};
+
+        doc.setFontSize(12);
+        doc.setFont(undefined, 'bold');
+        doc.text(`Equipamento: ${document.getElementById('equipment-select').selectedOptions[0].text}`, 20, yPos);
+        doc.setFont(undefined, 'normal');
+
+        doc.text(`Responsável: ${data.responsible}`, 20, yPos + 7);
+        doc.text(`Pressão: ${data.pressure} bar`, 20, yPos + 14);
+        doc.text(`Temperatura: ${data.temperature} °C`, 20, yPos + 21);
+        doc.text(`Estado: ${data.operation}`, 20, yPos + 28);
+        doc.text(`Data: ${data.datetime}`, 20, yPos + 35);
+        yPos += 45;
+
+        // Adicionar foto
+        if (currentData.photo) {
+            const img = document.getElementById('photoPreview');
+            const canvas = await html2canvas(img, {
+                scale: 2,
+                useCORS: true,
+                logging: false
+            });
+
+            const imgWidth = 150;
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+            doc.addPage();
+            doc.addImage(canvas, 'JPEG', 30, 20, imgWidth, imgHeight);
+        }
+
+        // Salvar PDF
+        doc.save(`relatorio_${Date.now()}.pdf`);
+    } catch (error) {
+        console.error('Erro ao gerar PDF:', error);
+        alert('Erro ao gerar o PDF! Verifique o console para detalhes.');
     }
 }
+
+// Gerar Relatório Completo
+async function generateCompletePDF() {
+    try {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({
+            orientation: 'portrait',
+            unit: 'mm',
+            format: 'a4'
+        });
+
+        // Cabeçalho
+        doc.setFontSize(16);
+        doc.text("Relatório Técnico Completo", 105, 20, { align: 'center' });
+        doc.setFontSize(10);
+        doc.text(`Gerado em: ${new Date().toLocaleString()}`, 105, 25, { align: 'center' });
+
+        // Dados dos equipamentos
+        let yPos = 40;
+        const equipmentData = currentData.equipmentData;
+
+        for (const [equipment, data] of Object.entries(equipmentData)) {
+            if (yPos > 250) {
+                doc.addPage();
+                yPos = 20;
+            }
+
+            doc.setFontSize(12);
+            doc.setFont(undefined, 'bold');
+            doc.text(`Equipamento: ${equipment}`, 20, yPos);
+            doc.setFont(undefined, 'normal');
+
+            doc.text(`Responsável: ${data.responsible}`, 20, yPos + 7);
+            doc.text(`Pressão: ${data.pressure} bar`, 20, yPos + 14);
+            doc.text(`Temperatura: ${data.temperature} °C`, 20, yPos + 21);
+            doc.text(`Estado: ${data.operation}`, 20, yPos + 28);
+            doc.text(`Data: ${data.datetime}`, 20, yPos + 35);
+            yPos += 45;
+
+            // Adicionar foto
+            if (currentData.photo) {
+                const img = document.getElementById('photoPreview');
+                const canvas = await html2canvas(img, {
+                    scale: 2,
+                    useCORS: true,
+                    logging: false
+                });
+
+                const imgWidth = 150;
+                const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                if (yPos + imgHeight > 270) {
+                    doc.addPage();
+                    yPos = 20;
+                }
+                doc.addImage(canvas, 'JPEG', 30, yPos, imgWidth, imgHeight);
+                yPos += imgHeight + 10;
+            }
+        }
+
+        // Salvar PDF
+        doc.save(`relatorio_completo_${Date.now()}.pdf`);
+    } catch (error) {
+        console.error('Erro ao gerar PDF:', error);
+        alert('Erro ao gerar o PDF! Verifique o console para detalhes.');
+    }
+}
+
+// Inicialização
+document.addEventListener('DOMContentLoaded', () => {
+    updateDateTime();
+    setInterval(updateDateTime, 1000);
+
+    document.getElementById('equipment-select').addEventListener('change', () => {
+        loadData();
+        saveData();
+    });
+
+    document.querySelectorAll('input, select').forEach(element => {
+        element.addEventListener('input', () => {
+            saveData();
+            element.reportValidity();
+        });
+    });
+
+    loadData();
+});
