@@ -112,8 +112,11 @@ async function generatePDF() {
 
             const imgWidth = 150;
             const imgHeight = (canvas.height * imgWidth) / canvas.width;
-            doc.addPage();
-            doc.addImage(canvas, 'JPEG', 30, 20, imgWidth, imgHeight);
+            if (yPos + imgHeight > 270) {
+                doc.addPage();
+                yPos = 20;
+            }
+            doc.addImage(canvas, 'JPEG', 30, yPos, imgWidth, imgHeight);
         }
 
         // Salvar PDF
@@ -197,6 +200,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setInterval(updateDateTime, 1000);
 
     document.getElementById('equipment-select').addEventListener('change', () => {
+        saveData();
         loadData();
     });
 
