@@ -47,7 +47,7 @@ function saveData() {
 function loadData() {
     const equipment = document.getElementById('equipment-select').value;
     const data = currentData.equipmentData[equipment] || {};
-    
+
     document.getElementById('responsible').value = data.responsible || '';
     document.getElementById('pressure').value = data.pressure || '';
     document.getElementById('temperature').value = data.temperature || '';
@@ -79,7 +79,7 @@ async function generatePDF() {
         doc.setFont(undefined, 'bold');
         doc.text(`Equipamento: ${document.getElementById('equipment-select').selectedOptions[0].text}`, 20, yPos);
         doc.setFont(undefined, 'normal');
-        
+
         doc.text(`Responsável: ${data.responsible}`, 20, yPos + 7);
         doc.text(`Pressão: ${data.pressure} bar`, 20, yPos + 14);
         doc.text(`Temperatura: ${data.temperature} °C`, 20, yPos + 21);
@@ -88,14 +88,14 @@ async function generatePDF() {
         yPos += 45;
 
         // Adicionar foto
-        if(currentData.photo) {
+        if (currentData.photo) {
             const img = document.getElementById('photoPreview');
             const canvas = await html2canvas(img, {
                 scale: 2,
                 useCORS: true,
                 logging: false
             });
-            
+
             const imgWidth = 150;
             const imgHeight = (canvas.height * imgWidth) / canvas.width;
             doc.addPage();
@@ -110,16 +110,82 @@ async function generatePDF() {
     }
 }
 
+// Gerar Relatório Completo
+async function generateCompletePDF() {
+    try {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({
+            orientation: 'portrait',
+            unit: 'mm',
+            format: 'a4'
+        });
+
+        // Cabeçalho
+        doc.setFontSize(16);
+        doc.text("Relatório Técnico Completo", 105, 20, { align: 'center' });
+        doc.setFontSize(10);
+        doc.text(`Gerado em: ${new Date().toLocaleString()}`, 105, 25, { align: 'center' });
+
+        // Dados dos equipamentos
+        let yPos = 40;
+        const equipmentData = currentData.equipmentData;
+
+        for (const [equipment, data] of Object.entries(equipmentData)) {
+            if (yPos > 250) {
+                doc.addPage();
+                yPos = 20;
+            }
+
+            doc.setFontSize(12);
+            doc.setFont(undefined, 'bold');
+            doc.text(`Equipamento: ${equipment}`, 20, yPos);
+            doc.setFont(undefined, 'normal');
+
+            doc.text(`Responsável: ${data.responsible}`, 20, yPos + 7);
+            doc.text(`Pressão: ${data.pressure} bar`, 20, yPos + 14);
+            doc.text(`Temperatura: ${data.temperature} °C`, 20, yPos + 21);
+            doc.text(`Estado: ${data.operation}`, 20, yPos + 28);
+            doc.text(`Data: ${data.datetime}`, 20, yPos + 35);
+            yPos += 45;
+
+            // Adicionar foto
+            if (currentData.photo) {
+                const img = document.getElementById('photoPreview');
+                const canvas = await html2canvas(img, {
+                    scale: 2,
+                    useCORS: true,
+                    logging: false
+                });
+
+                const imgWidth = 150;
+                const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                if (yPos + imgHeight > 270) {
+                    doc.addPage();
+                    yPos = 20;
+                }
+                doc.addImage(canvas, 'JPEG', 30, yPos, imgWidth, imgHeight);
+                yPos += imgHeight + 10;
+            }
+        }
+
+        // Salvar PDF
+        doc.save(`relatorio_completo_${Date.now()}.pdf`);
+    } catch (error) {
+        console.error('Erro ao gerar PDF:', error);
+        alert('Erro ao gerar o PDF! Verifique o console para detalhes.');
+    }
+}
+
 // Inicialização
 document.addEventListener('DOMContentLoaded', () => {
     updateDateTime();
     setInterval(updateDateTime, 1000);
-    
+
     document.getElementById('equipment-select').addEventListener('change', () => {
         loadData();
         saveData();
     });
-    
+
     document.querySelectorAll('input, select').forEach(element => {
         element.addEventListener('input', () => {
             saveData();
