@@ -48,6 +48,16 @@ function saveData() {
     localStorage.setItem('equipmentData', JSON.stringify(currentData.equipmentData));
 }
 
+// Limpar campos
+function clearFields() {
+    document.getElementById('responsible').value = '';
+    document.getElementById('pressure').value = '';
+    document.getElementById('temperature').value = '';
+    document.getElementById('operation-select').value = 'parado';
+    document.getElementById('photoPreview').src = '';
+    document.getElementById('photoPreview').style.display = 'none';
+}
+
 // Carregar dados
 function loadData() {
     const equipment = document.getElementById('equipment-select').value;
@@ -200,16 +210,16 @@ document.addEventListener('DOMContentLoaded', () => {
     setInterval(updateDateTime, 1000);
 
     document.getElementById('equipment-select').addEventListener('change', () => {
-        saveData();
-        loadData();
+        saveData(); // Salva os dados do equipamento atual
+        clearFields(); // Limpa os campos para o novo equipamento
+        loadData(); // Carrega os dados do novo equipamento
     });
 
     document.querySelectorAll('input, select').forEach(element => {
         element.addEventListener('input', () => {
-            saveData();
-            element.reportValidity();
+            saveData(); // Salva os dados ao digitar
         });
     });
 
-    loadData();
+    loadData(); // Carrega os dados do equipamento inicial
 });
