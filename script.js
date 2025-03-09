@@ -1,5 +1,4 @@
 let currentData = {
-    photo: null,
     equipmentData: JSON.parse(localStorage.getItem('equipmentData')) || {}
 };
 
@@ -24,7 +23,9 @@ document.getElementById('photoInput').addEventListener('change', function(e) {
             const img = document.getElementById('photoPreview');
             img.src = event.target.result;
             img.style.display = 'block';
-            currentData.photo = event.target.result;
+            const equipment = document.getElementById('equipment-select').value;
+            currentData.equipmentData[equipment].photo = event.target.result;
+            localStorage.setItem('equipmentData', JSON.stringify(currentData.equipmentData));
         };
         reader.readAsDataURL(file);
     }
@@ -34,6 +35,7 @@ document.getElementById('photoInput').addEventListener('change', function(e) {
 function saveData() {
     const equipment = document.getElementById('equipment-select').value;
     currentData.equipmentData[equipment] = {
+        ...currentData.equipmentData[equipment],
         responsible: document.getElementById('responsible').value,
         pressure: document.getElementById('pressure').value,
         temperature: document.getElementById('temperature').value,
@@ -52,6 +54,14 @@ function loadData() {
     document.getElementById('pressure').value = data.pressure || '';
     document.getElementById('temperature').value = data.temperature || '';
     document.getElementById('operation-select').value = data.operation || 'parado';
+
+    const img = document.getElementById('photoPreview');
+    if (data.photo) {
+        img.src = data.photo;
+        img.style.display = 'block';
+    } else {
+        img.style.display = 'none';
+    }
 }
 
 // Gerar PDF
@@ -88,8 +98,9 @@ async function generatePDF() {
         yPos += 45;
 
         // Adicionar foto
-        if (currentData.photo) {
-            const img = document.getElementById('photoPreview');
+        if (data.photo) {
+            const img = new Image();
+            img.src = data.photo;
             const canvas = await html2canvas(img, {
                 scale: 2,
                 useCORS: true,
@@ -149,8 +160,9 @@ async function generateCompletePDF() {
             yPos += 45;
 
             // Adicionar foto
-            if (currentData.photo) {
-                const img = document.getElementById('photoPreview');
+            if (data.photo) {
+                const img = new Image();
+                img.src = data.photo;
                 const canvas = await html2canvas(img, {
                     scale: 2,
                     useCORS: true,
@@ -183,7 +195,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('equipment-select').addEventListener('change', () => {
         loadData();
-        saveData();
     });
 
     document.querySelectorAll('input, select').forEach(element => {
